@@ -94,6 +94,20 @@ export function Footer() {
           * Instagram принадлежит компании Meta Platforms Inc., деятельность которой
           признана экстремистской и запрещена на территории РФ.
         </p>
+
+        <div className="mt-8 flex justify-center">
+          <a
+            href="https://github.com/Nilvix"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-baseline gap-2 text-white/45 transition-colors duration-300 hover:text-white/60"
+          >
+            <span className="text-[10px] uppercase tracking-[0.3em]">Created by</span>
+            <span className="bg-gradient-to-r from-white via-accent-soft to-accent bg-clip-text px-1 font-signature text-3xl leading-none text-transparent transition-[filter] duration-500 group-hover:drop-shadow-[0_0_10px_rgba(241,19,241,0.6)]">
+              Nilvix
+            </span>
+          </a>
+        </div>
       </div>
     </footer>
   );

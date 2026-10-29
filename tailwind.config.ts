@@ -18,6 +18,7 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-unbounded)", "system-ui", "sans-serif"],
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        signature: ["var(--font-signature)", "cursive"],
       },
       boxShadow: {
         glow: "0 0 40px rgba(241, 19, 241, 0.45)",

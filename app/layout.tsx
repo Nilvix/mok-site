@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Unbounded, Inter, Jura } from "next/font/google";
+import { Unbounded, Inter, Jura, Great_Vibes } from "next/font/google";
 import { SITE } from "@/lib/site-config";
 import "./globals.css";
 
@@ -15,6 +15,15 @@ const jura = Jura({
   weight: ["500"],
   variable: "--font-jura",
   display: "swap",
+});
+
+// Только для подписи автора в футере
+const signature = Great_Vibes({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-signature",
+  display: "swap",
+  preload: false,
 });
 
 const inter = Inter({
@@ -52,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className={`${unbounded.variable} ${inter.variable} ${jura.variable}`}>
+    <html lang="ru" className={`${unbounded.variable} ${inter.variable} ${jura.variable} ${signature.variable}`}>
       <body className="bg-ink font-sans text-white">{children}</body>
     </html>
   );
