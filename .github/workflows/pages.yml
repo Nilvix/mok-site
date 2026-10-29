@@ -1,0 +1,59 @@
+# Публикация статической версии сайта на GitHub Pages.
+# Пересборка: при пуше в main, по кнопке «Run workflow» и раз в сутки —
+# чтобы подтянуть свежие отзывы, рейтинг и фото с Яндекс Карт.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * *" # 06:00 по Москве
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Build static site
+        run: npm run build:pages
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - run: touch .next-pages/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .next-pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

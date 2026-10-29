@@ -1,0 +1,22 @@
+# Не попадает в контекст сборки Docker
+node_modules
+.next
+out
+build
+coverage
+.git
+.gitignore
+.claude
+.vscode
+.idea
+.DS_Store
+*.log
+*.tsbuildinfo
+Dockerfile
+docker-compose*.yml
+README.md
+
+# Секреты — передаются в контейнер через env_file, а не вшиваются в образ
+.env
+.env.*
+!.env.example

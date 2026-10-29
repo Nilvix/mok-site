@@ -34,3 +34,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# docker
+.env
+!.env.example
+
+# static build for GitHub Pages
+/.next-pages/
+
+# local tooling
+/.claude/

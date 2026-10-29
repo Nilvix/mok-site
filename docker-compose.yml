@@ -1,0 +1,44 @@
+# Запуск: docker compose up -d --build
+# Логи:   docker compose logs -f web
+services:
+  web:
+    build: .
+    image: mok-site:latest
+    container_name: mok-site
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+    volumes:
+      # Кэш Next.js переживает перезапуск контейнера
+      - next-cache:/app/.next/cache
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Заготовка под базу данных (раскомментируй, когда понадобится хранить заявки, акции и т. п.)
+  # db:
+  #   image: postgres:16-alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: mok
+  #     POSTGRES_USER: mok
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env}
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+
+volumes:
+  next-cache:
+  # db-data:
