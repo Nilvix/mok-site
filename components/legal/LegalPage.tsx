@@ -62,8 +62,8 @@ export function OperatorDetails() {
       {/* Пустые реквизиты не выводятся — заполни их в lib/site-config.ts → legal */}
       {legal.name && <li>Наименование: {legal.name}</li>}
       {legal.inn && <li>ИНН: {legal.inn}</li>}
-      {legal.ogrn && <li>ОГРН / ОГРНИП: {legal.ogrn}</li>}
-      <li>Юридический адрес: {legal.address || SITE.address}</li>
+      {legal.ogrn && <li>ОГРНИП: {legal.ogrn}</li>}
+      {legal.address && <li>Юридический адрес: {legal.address}</li>}
       <li>Адрес заведения: {SITE.address}</li>
       <li>
         Телефон: <a href={SITE.phoneHref}>{SITE.phone}</a>
