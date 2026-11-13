@@ -42,9 +42,9 @@ export function About() {
               <ul className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {[
                   "Авторские паровые коктейли",
-                  "Коктейльная карта",
-                  "Кухня до позднего",
-                  "PlayStation и настолки",
+                  "Лимонады, кофе и милкшейки",
+                  "Кухня до 2:30",
+                  "Компьютерные залы и PlayStation 5",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-3 text-sm text-white/75">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />

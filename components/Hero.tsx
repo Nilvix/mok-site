@@ -120,30 +120,51 @@ export function Hero() {
 
             <div className="relative">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-                Акция месяца
+                Розыгрыш · новое заведение
               </span>
 
               <h3 className="mt-5 text-2xl font-black leading-tight text-white md:text-3xl">
-                Паровой коктейль в подарок к сету
+                Мы открылись на Октябрьской, 322 — разыгрываем 30 000 ₽
               </h3>
 
               <p className="mt-3 text-sm leading-relaxed text-white/60">
-                Каждую пятницу и субботу — паровой коктейль в подарок при заказе
-                кухни от 3000 ₽. Подробности у администратора.
+                За каждые 2 500 ₽ в чеке — билет с личным номером. Итоги подведём,
+                когда будут вручены все 300 билетов.
               </p>
+
+              <ul className="mt-5 space-y-2 text-sm">
+                {[
+                  ["1 место", "30 000 ₽ деньгами"],
+                  ["2 место", "сертификат на 5 000 ₽"],
+                  ["3 место", "сертификат на 3 000 ₽"],
+                  ["4 место", "сертификат на 2 000 ₽"],
+                ].map(([place, prize], i) => (
+                  <li
+                    key={place}
+                    className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0"
+                  >
+                    <span className={i === 0 ? "font-semibold text-accent" : "text-white/50"}>
+                      {place}
+                    </span>
+                    <span className={i === 0 ? "font-bold text-white" : "text-white/80"}>
+                      {prize}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
               <div className="mt-7 flex items-end justify-between gap-4">
                 <div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-black leading-none text-white">
-                      30
+                      300
                     </span>
                     <span className="text-xs uppercase tracking-widest text-white/50">
-                      дней
+                      билетов
                     </span>
                   </div>
                   <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-white/40">
-                    до конца акции
+                    в розыгрыше
                   </div>
                 </div>
                 <Button
