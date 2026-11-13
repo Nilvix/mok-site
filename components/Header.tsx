@@ -8,22 +8,27 @@ import {
   useScroll,
   useSpring,
 } from "framer-motion";
-import { CalendarCheck, Menu, Phone, X } from "lucide-react";
+import { ArrowRightLeft, CalendarCheck, Menu, Phone, X } from "lucide-react";
 import { Button } from "./ui/Button";
 import { LogoMark } from "./ui/LogoMark";
 import { SITE } from "@/lib/site-config";
+import { otherVenue } from "@/lib/venues";
+import { useVenue } from "./VenueProvider";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/motion";
 
-const NAV = [
-  { href: "#about", label: "О нас" },
-  { href: "#services", label: "Услуги" },
-  { href: "#gallery", label: "Галерея" },
-  { href: "#reviews", label: "Отзывы" },
-  { href: "#contact", label: "Контакты" },
-];
-
 export function Header() {
+  const venue = useVenue();
+  const other = otherVenue(venue);
+  const home = venue.basePath || "/";
+  const NAV = [
+    { href: `${home}#about`, label: "О нас" },
+    { href: `${home}#services`, label: "Услуги" },
+    ...(venue.id === "220" ? [{ href: "/menu", label: "Меню" }] : []),
+    { href: `${home}#gallery`, label: "Галерея" },
+    { href: `${home}#reviews`, label: "Отзывы" },
+    { href: `${home}#contact`, label: "Контакты" },
+  ];
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
@@ -66,11 +71,11 @@ export function Header() {
         )}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 md:px-8">
-          <Link href="#top" aria-label={`${SITE.name} — на главную`}>
+          <Link href={home} aria-label={`${SITE.name} — на главную`}>
             <LogoMark className="w-[88px] md:w-[104px]" />
           </Link>
 
-          <nav className="hidden items-center gap-9 lg:flex">
+          <nav className="hidden items-center gap-7 lg:flex xl:gap-9">
             {NAV.map((item) => (
               <Link
                 key={item.href}
@@ -84,22 +89,31 @@ export function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
+            <Link
+              href={other.basePath || "/"}
+              title={`Перейти в МОК на ${other.short}`}
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-all hover:border-accent hover:text-accent active:scale-95"
+            >
+              <ArrowRightLeft size={15} />
+              <span className="hidden xl:inline">{other.short}</span>
+              <span className="xl:hidden">{other.id}</span>
+            </Link>
             <a
-              href={SITE.phoneHref}
-              aria-label={`Позвонить: ${SITE.phone}`}
-              title={SITE.phone}
+              href={venue.phoneHref}
+              aria-label={`Позвонить: ${venue.phone}`}
+              title={venue.phone}
               className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-white/80 transition-all hover:border-accent hover:text-accent active:scale-95"
             >
               <Phone size={17} />
             </a>
-            <Button href={SITE.bookingUrl} variant="primary" className="px-6 py-3 text-sm">
+            <Button href={venue.bookingUrl} variant="primary" className="px-6 py-3 text-sm">
               <CalendarCheck size={16} /> Забронировать
             </Button>
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
           <a
-            href={SITE.bookingUrl}
+            href={venue.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
@@ -171,12 +185,19 @@ export function Header() {
                 transition={{ duration: 0.5, ease: EASE }}
                 className="flex flex-col items-center gap-3 pt-4"
               >
-                <Button href={SITE.bookingUrl} onClick={() => setOpen(false)}>
+                <Button href={venue.bookingUrl} onClick={() => setOpen(false)}>
                   <CalendarCheck size={16} /> Забронировать стол
                 </Button>
-                <Button href={SITE.phoneHref} variant="outline" onClick={() => setOpen(false)}>
-                  <Phone size={16} /> {SITE.phone}
+                <Button href={venue.phoneHref} variant="outline" onClick={() => setOpen(false)}>
+                  <Phone size={16} /> {venue.phone}
                 </Button>
+                <Link
+                  href={other.basePath || "/"}
+                  onClick={() => setOpen(false)}
+                  className="mt-2 inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-accent"
+                >
+                  <ArrowRightLeft size={15} /> МОК на {other.short}
+                </Link>
               </motion.div>
             </motion.nav>
           </motion.div>
@@ -187,7 +208,7 @@ export function Header() {
       <AnimatePresence>
         {pastHero && !open && (
           <motion.a
-            href={SITE.bookingUrl}
+            href={venue.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
             initial={{ y: 90, opacity: 0 }}

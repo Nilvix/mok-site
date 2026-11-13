@@ -1,11 +1,15 @@
 import type { Photo, Review, YandexData } from "./reviews";
-import snapshot from "./yandex-snapshot.json";
+import snapshot220 from "./yandex-snapshot.json";
+import snapshot322 from "./yandex-snapshot-322.json";
 import { logger } from "./server/logger";
+import { VENUES, type VenueId } from "./venues";
 
 const log = logger("yandex");
 
-export const YANDEX_ORG_ID = "175130855154";
-const ORG_URL = `https://yandex.ru/maps/org/mok/${YANDEX_ORG_ID}`;
+/** Резервные снимки на случай капчи Яндекса (обновляются npm run sync:yandex). */
+const SNAPSHOTS: Record<VenueId, unknown> = { "220": snapshot220, "322": snapshot322 };
+
+const orgUrl = (venue: VenueId) => `https://yandex.ru/maps/org/mok/${VENUES[venue].yandexOrgId}`;
 
 /** Как часто обновлять данные с Яндекса (сек). */
 const REVALIDATE = 60 * 60 * 6;
@@ -44,7 +48,8 @@ function altayBase(url: unknown): string | null {
   return m ? m[1] : null;
 }
 
-export function parseYandexState(html: string): Omit<YandexData, "source"> {
+export function parseYandexState(html: string, venue: VenueId = "220"): Omit<YandexData, "source"> {
+  const ORG_URL = orgUrl(venue);
   const raw = html.match(
     /<script type="application\/json" class="state-view">([\s\S]*?)<\/script>/,
   )?.[1];
@@ -117,17 +122,17 @@ export function parseYandexState(html: string): Omit<YandexData, "source"> {
  * Кэшируется на REVALIDATE секунд; если Яндекс не ответил или показал капчу —
  * возвращается сохранённый снимок lib/yandex-snapshot.json.
  */
-export async function getYandexData(): Promise<YandexData> {
+export async function getYandexData(venue: VenueId = "220"): Promise<YandexData> {
   try {
-    const res = await fetch(`${ORG_URL}/reviews/`, {
+    const res = await fetch(`${orgUrl(venue)}/reviews/`, {
       headers: { "User-Agent": UA, "Accept-Language": "ru-RU,ru;q=0.9" },
-      next: { revalidate: REVALIDATE, tags: ["yandex"] },
+      next: { revalidate: REVALIDATE, tags: ["yandex", `yandex-${venue}`] },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) throw new Error(`Yandex: HTTP ${res.status}`);
-    return { ...parseYandexState(await res.text()), source: "live" };
+    return { ...parseYandexState(await res.text(), venue), source: "live" };
   } catch (e) {
-    log.warn("live fetch failed, using snapshot", { reason: (e as Error).message });
-    return { ...(snapshot as Omit<YandexData, "source">), source: "snapshot" };
+    log.warn("live fetch failed, using snapshot", { venue, reason: (e as Error).message });
+    return { ...(SNAPSHOTS[venue] as Omit<YandexData, "source">), source: "snapshot" };
   }
 }

@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { Reveal } from "./ui/Reveal";
-import { SITE } from "@/lib/site-config";
+import { useVenue, useVenueRating } from "./VenueProvider";
 
 export function About() {
+  const venue = useVenue();
+  const rating = useVenueRating();
   return (
     <section id="about" className="relative py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
@@ -58,7 +60,7 @@ export function About() {
           <Reveal delay={0.15} className="md:col-span-6">
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10">
               <Image
-                src={SITE.images.about}
+                src={venue.images.about}
                 alt="Барная стойка ресто-лаунжа МОК"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
@@ -72,7 +74,7 @@ export function About() {
                     Рейтинг
                   </div>
                   <div className="mt-1 text-2xl font-black text-white">
-                    {SITE.rating}
+                    {rating ? rating.toFixed(1) : "—"}
                   </div>
                 </div>
                 <div className="text-right">
@@ -80,7 +82,7 @@ export function About() {
                     Адрес
                   </div>
                   <div className="mt-1 text-sm font-semibold text-white">
-                    {SITE.addressShort}
+                    {venue.addressShort}
                   </div>
                 </div>
               </div>

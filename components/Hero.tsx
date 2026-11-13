@@ -6,6 +6,7 @@ import { ArrowDown, CalendarCheck, Sparkles } from "lucide-react";
 import { Button } from "./ui/Button";
 import { LogoMark } from "./ui/LogoMark";
 import { SITE } from "@/lib/site-config";
+import { useVenue, useVenueRating } from "./VenueProvider";
 import { EASE } from "@/lib/motion";
 
 const container: Variants = {
@@ -20,12 +21,15 @@ const item: Variants = {
 
 export function Hero() {
   const reduce = useReducedMotion();
+  const venue = useVenue();
+  const rating = useVenueRating();
+  const isNew = venue.id === "322";
 
   return (
     <section id="top" className="relative min-h-[100svh] w-full overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src={SITE.images.hero}
+          src={venue.images.hero}
           alt=""
           fill
           priority
@@ -33,7 +37,7 @@ export function Hero() {
           className="object-cover object-center opacity-30"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/90 to-ink" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-20%,rgba(233,30,140,0.30),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-20%,rgb(var(--c-hero-glow)/0.30),transparent_60%)]" />
       </div>
 
       <div
@@ -61,7 +65,7 @@ export function Hero() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            <span className="font-medium">Ресто-лаунж · Черкесск</span>
+            <span className="font-medium">{venue.kind} · {venue.short}</span>
             <Sparkles size={14} className="text-accent" />
           </motion.div>
 
@@ -78,7 +82,7 @@ export function Hero() {
           </motion.p>
 
           <motion.div variants={item} className="mt-9 flex flex-wrap items-center gap-4">
-            <Button href={SITE.bookingUrl} variant="primary">
+            <Button href={venue.bookingUrl} variant="primary">
               <CalendarCheck size={18} /> Забронировать стол
             </Button>
             <Button href="#services" variant="outline">
@@ -91,8 +95,8 @@ export function Hero() {
             className="mt-14 grid max-w-lg grid-cols-3 gap-4 border-t sm:gap-6 border-white/10 pt-8"
           >
             {[
-              { v: SITE.rating, l: "рейтинг" },
-              { v: "220", l: "Октябрьская" },
+              { v: rating ? rating.toFixed(1) : SITE.rating, l: "рейтинг" },
+              { v: venue.id, l: "Октябрьская" },
               { v: SITE.city, l: "КЧР" },
             ].map((s) => (
               <div key={s.l}>
@@ -124,7 +128,7 @@ export function Hero() {
               </span>
 
               <h3 className="mt-5 text-2xl font-black leading-tight text-white md:text-3xl">
-                Мы открылись на Октябрьской, 322 — разыгрываем 30 000 ₽
+                {isNew ? "Мы открылись — разыгрываем 30 000 ₽" : "Мы открылись на Октябрьской, 322 — разыгрываем 30 000 ₽"}
               </h3>
 
               <p className="mt-3 text-sm leading-relaxed text-white/60">
@@ -168,7 +172,7 @@ export function Hero() {
                   </div>
                 </div>
                 <Button
-                  href={SITE.phoneHref}
+                  href={venue.phoneHref}
                   variant="outline"
                   className="px-5 py-2.5 text-sm"
                 >

@@ -3,15 +3,18 @@
 import { MapPin, Phone, Clock, CalendarCheck } from "lucide-react";
 import { Reveal } from "./ui/Reveal";
 import { Button } from "./ui/Button";
-import { SITE } from "@/lib/site-config";
+import { useVenue } from "./VenueProvider";
+import { mapEmbedUrl, routeLink } from "@/lib/venues";
 
-const INFO = [
-  { icon: MapPin, label: "Адрес", value: SITE.address },
-  { icon: Phone, label: "Телефон", value: SITE.phone, href: SITE.phoneHref },
-  { icon: Clock, label: "Часы работы", value: SITE.hours },
-];
+
 
 export function Contact() {
+  const venue = useVenue();
+  const INFO = [
+    { icon: MapPin, label: "Адрес", value: venue.address, href: undefined as string | undefined },
+    { icon: Phone, label: "Телефон", value: venue.phone, href: venue.phoneHref },
+    { icon: Clock, label: "Часы работы", value: `Ежедневно · ${venue.hours}`, href: undefined },
+  ];
   return (
     <section id="contact" className="relative py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
@@ -72,13 +75,13 @@ export function Contact() {
 
             <Reveal delay={0.35}>
               <div className="mt-10 flex flex-wrap gap-4">
-                <Button href={SITE.bookingUrl} variant="primary">
+                <Button href={venue.bookingUrl} variant="primary">
                   <CalendarCheck size={18} /> Забронировать стол
                 </Button>
-                <Button href={SITE.phoneHref} variant="outline" className="px-6 py-3 text-sm">
+                <Button href={venue.phoneHref} variant="outline" className="px-6 py-3 text-sm">
                   <Phone size={16} /> Позвонить
                 </Button>
-                <Button href={SITE.mapLink} variant="outline" className="px-6 py-3 text-sm">
+                <Button href={routeLink(venue)} variant="outline" className="px-6 py-3 text-sm">
                   Проложить маршрут
                 </Button>
               </div>
@@ -89,7 +92,7 @@ export function Contact() {
             <div className="relative h-[420px] overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] md:h-full md:min-h-[520px]">
               <iframe
                 title="МОК на карте"
-                src={SITE.mapEmbed}
+                src={mapEmbedUrl(venue)}
                 loading="lazy"
                 className="h-full w-full"
                 style={{ border: 0, filter: "invert(0.9) hue-rotate(180deg)" }}

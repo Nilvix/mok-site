@@ -4,7 +4,21 @@
 
 :root {
   --ink: #0a0a0a;
-  --accent: #f113f1d9;
+  /* МОК на Октябрьской, 220 — фиолетово-розовая палитра */
+  --c-accent: 241 19 241;
+  --c-accent-dark: 185 14 185;
+  --c-accent-soft: 245 92 245;
+  --c-logo: 226 28 220;
+  --c-hero-glow: 233 30 140;
+}
+
+/* МОК на Октябрьской, 322 — чёрно-красно-белая палитра */
+.theme-red {
+  --c-accent: 232 20 27;
+  --c-accent-dark: 178 12 18;
+  --c-accent-soft: 255 84 90;
+  --c-logo: 232 20 27;
+  --c-hero-glow: 232 20 27;
 }
 
 * {
@@ -102,10 +116,10 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: #f113f1;
+  background: rgb(var(--c-accent));
 }
 .legal a {
-  color: #f113f1;
+  color: rgb(var(--c-accent));
   text-underline-offset: 3px;
 }
 .legal a:hover {

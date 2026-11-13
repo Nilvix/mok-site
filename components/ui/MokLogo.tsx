@@ -4,7 +4,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /** Цвета логотипа (сняты с оригинала). */
-export const LOGO_PINK = "#E21CDC";
+/** Цвет точек логотипа — берётся из палитры заведения (--c-logo). */
+export const LOGO_PINK = "rgb(var(--c-logo))";
 const LOGO_WHITE = "#FFFFFF";
 
 // Геометрия перерисована с оригинального логотипа (координаты в его пикселях).
@@ -50,7 +51,7 @@ export function MokLogo({ className, tagline = false, animated = false, title = 
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       />
-      <g fill={LOGO_PINK}>
+      <g style={{ fill: LOGO_PINK }}>
         {DOTS.map(([cx, cy], i) => (
           <motion.circle
             key={i}

@@ -11,9 +11,11 @@ const config: Config = {
         ink: "#0A0A0A",
         coal: "#111111",
         snow: "#FFFFFF",
-        accent: "#F113F1",
-        "accent-dark": "#B90EB9",
-        "accent-soft": "#F55CF5",
+        // Цвета акцента задаются CSS-переменными: у каждого заведения своя палитра (app/globals.css)
+        accent: "rgb(var(--c-accent) / <alpha-value>)",
+        "accent-dark": "rgb(var(--c-accent-dark) / <alpha-value>)",
+        "accent-soft": "rgb(var(--c-accent-soft) / <alpha-value>)",
+        logo: "rgb(var(--c-logo) / <alpha-value>)",
       },
       fontFamily: {
         display: ["var(--font-unbounded)", "system-ui", "sans-serif"],
@@ -21,7 +23,7 @@ const config: Config = {
         signature: ["var(--font-signature)", "cursive"],
       },
       boxShadow: {
-        glow: "0 0 40px rgba(241, 19, 241, 0.45)",
+        glow: "0 0 40px rgb(var(--c-accent) / 0.45)",
       },
     },
   },
