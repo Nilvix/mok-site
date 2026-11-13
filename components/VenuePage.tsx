@@ -11,6 +11,7 @@ import { VenueProvider } from "@/components/VenueProvider";
 import { getYandexData } from "@/lib/yandex";
 import type { VenueId } from "@/lib/venues";
 import { getMenu, getVenueContent } from "@/lib/content";
+import { PHOTOS_322, PHOTO_CREDIT_322 } from "@/lib/gallery-322";
 import { MenuProvider } from "@/components/menu/MenuProvider";
 
 /** Главная страница заведения: одинаковая структура, свои данные и палитра. */
@@ -26,7 +27,11 @@ export async function VenuePage({ id }: { id: VenueId }) {
         <Marquee />
         <About />
         <Services />
-        <Gallery photos={yandex.photos} link={yandex.link} />
+        <Gallery
+          photos={id === "322" ? [...PHOTOS_322, ...yandex.photos] : yandex.photos}
+          link={yandex.link}
+          credit={id === "322" ? PHOTO_CREDIT_322 : undefined}
+        />
         <Reviews data={yandex} />
         <Contact />
       </main>

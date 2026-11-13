@@ -21,14 +21,14 @@ export function About() {
             <Reveal delay={0.05}>
               <h2 className="mt-5 text-3xl font-black leading-[1.1] tracking-tight text-white md:text-5xl">
                 Больше, чем
-                <span className="text-accent"> лаунж</span>
+                <span className="text-accent">{venue.id === "322" ? " ресторан" : " лаунж"}</span>
               </h2>
             </Reveal>
 
             <Reveal delay={0.1}>
               <p className="mt-6 text-base leading-relaxed text-white/60 md:text-lg">
-                МОК — это ресто-лаунж в центре Черкесска. Мы соединили
-                четыре вещи, за которые хочется остаться до утра: вкусную
+                МОК — это {venue.kind.toLowerCase()} в Черкесске, {venue.addressShort}. Мы соединили
+                четыре вещи, за которые хочется остаться до ночи: вкусную
                 кухню, авторский бар, паровые коктейли и игровую зону.
               </p>
             </Reveal>
@@ -45,7 +45,7 @@ export function About() {
                 {[
                   "Авторские паровые коктейли",
                   "Лимонады, кофе и милкшейки",
-                  "Кухня до 2:30",
+                  venue.id === "220" ? "Кухня до 2:30" : `Открыто ${venue.hours.replace(" — ", "–")}`,
                   "Компьютерные залы и PlayStation 5",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-3 text-sm text-white/75">

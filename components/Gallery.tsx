@@ -27,7 +27,7 @@ const PATTERN = [
   "col-span-2 row-span-1",
 ];
 
-export function Gallery({ photos, link }: { photos: Photo[]; link: string }) {
+export function Gallery({ photos, link, credit }: { photos: Photo[]; link: string; credit?: string }) {
   const [visible, setVisible] = useState(INITIAL);
   const [open, setOpen] = useState<number | null>(null);
 
@@ -58,8 +58,9 @@ export function Gallery({ photos, link }: { photos: Photo[]; link: string }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-accent"
             >
-              <MapPin size={14} /> {photos.length} фото с Яндекс Карт
+              <MapPin size={14} /> {photos.filter((p) => !p.src).length} фото с Яндекс Карт
             </a>
+            {credit && <p className="mt-1 text-xs text-white/35 md:text-right">Фото интерьера: {credit}</p>}
           </Reveal>
         </div>
 

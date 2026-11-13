@@ -14,6 +14,8 @@ export type Photo = {
   /** Шаблон без размера: `${base}/${size}`, size — S | M | L | XL | XXL | XXXL | orig */
   base: string;
   alt: string;
+  /** Готовый адрес картинки (для своих фото, не с Яндекса) */
+  src?: string;
 };
 
 export type YandexData = {
@@ -29,5 +31,5 @@ export type YandexData = {
   source: "live" | "snapshot";
 };
 
-export const photoUrl = (p: Pick<Photo, "base">, size = "XXL") =>
-  `${p.base}/${size}`;
+export const photoUrl = (p: Pick<Photo, "base" | "src">, size = "XXL") =>
+  p.src ?? `${p.base}/${size}`;
