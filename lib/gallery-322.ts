@@ -15,6 +15,8 @@ import p14_seating from "@/assets/venues/322/14-seating.jpg";
 import p15_booths from "@/assets/venues/322/15-booths.jpg";
 import p16_details from "@/assets/venues/322/16-details.jpg";
 import p17_reception from "@/assets/venues/322/17-reception.jpg";
+import p18_steam_bar from "@/assets/venues/322/18-steam-bar.jpg";
+import p19_drinks_fridge from "@/assets/venues/322/19-drinks-fridge.jpg";
 
 /**
  * Профессиональные фото интерьера МОК на Октябрьской, 322
@@ -34,6 +36,8 @@ export const PHOTOS_322: Photo[] = [
   { id: "322-lounge", base: "", src: p10_lounge.src, alt: "МОК на Октябрьской, 322 — мягкая зона" },
   { id: "322-corridor", base: "", src: p11_corridor.src, alt: "МОК на Октябрьской, 322 — коридор с кабинками" },
   { id: "322-logo-chair", base: "", src: p12_logo_chair.src, alt: "МОК на Октябрьской, 322 — кресло у вывески" },
+  { id: "322-steam-bar", base: "", src: p18_steam_bar.src, alt: "МОК на Октябрьской, 322 — барная стойка с паровыми коктейлями" },
+  { id: "322-drinks-fridge", base: "", src: p19_drinks_fridge.src, alt: "МОК на Октябрьской, 322 — холодильник с напитками" },
   { id: "322-shelves", base: "", src: p13_shelves.src, alt: "МОК на Октябрьской, 322 — стеллажи с декором" },
   { id: "322-seating", base: "", src: p14_seating.src, alt: "МОК на Октябрьской, 322 — посадка у окна" },
   { id: "322-booths", base: "", src: p15_booths.src, alt: "МОК на Октябрьской, 322 — кабинки вдоль стены" },
