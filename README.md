@@ -15,7 +15,7 @@ npm run dev                  # http://localhost:3000
 
 ```bash
 cp .env.example .env         # заполни POSTGRES_PASSWORD, ADMIN_LOGIN/ADMIN_PASSWORD, SITE_URL
-docker compose --profile prod up -d --build   # сайт + база + бэкапы, http://localhost:3000
+docker compose --profile prod up -d --build   # nginx + сайт + база + бэкапы, http://localhost
 docker compose logs -f web   # логи (JSON, по строке на событие)
 ```
 
@@ -80,6 +80,20 @@ GitHub Pages отдаёт только статические файлы, поэ
 ```bash
 GITHUB_PAGES=true NEXT_BASE_PATH=/mok-site npm run build:pages   # → .next-pages/
 ```
+
+## Защита
+
+- **nginx** (`deploy/nginx/nginx.conf`, сервис `proxy`, профиль `prod`) стоит перед сайтом:
+  - лимиты с одного IP: страницы — 20 запросов/с, админка — 5/с, вход — 10 в минуту, API — 2/с;
+    не более 30 одновременных соединений;
+  - короткие таймауты и лимит тела 1 МБ (защита от «медленных» атак вроде Slowloris);
+  - запросы сканеров (`.env`, `.git`, `wp-login`, `*.php`) обрываются без ответа;
+  - nginx перезаписывает `X-Real-IP`, поэтому клиент не может подменить свой IP и обойти лимиты входа.
+- Сайт напрямую слушает только `127.0.0.1` — снаружи доступен лишь через nginx.
+- Заголовки: Content-Security-Policy (скрипты только свои, картинки — свои и Яндекса,
+  встраивание — только карта Яндекса), HSTS, X-Frame-Options, Permissions-Policy и др.
+- От объёмных DDoS-атак (L3/L4) защищает хостинг-провайдер; для серьёзной защиты —
+  платная услуга провайдера или сервис вроде DDoS-Guard/Qrator.
 
 ## Переменные окружения
 

@@ -26,7 +26,8 @@ let dummyHash: Promise<string> | null = null;
 
 export function requestIp(): string {
   const h = headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+  // X-Real-IP выставляет nginx (перезаписывая значение клиента), поэтому ему доверяем в первую очередь
+  return h.get("x-real-ip") || h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 
 export type LoginResult = { ok: true } | { ok: false; error: string };

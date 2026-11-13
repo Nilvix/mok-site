@@ -7,8 +7,9 @@ services:
     image: mok-site:latest
     container_name: mok-site
     restart: unless-stopped
+    # Наружу сайт отдаёт nginx; напрямую — только с этого компьютера/сервера
     ports:
-      - "${PORT:-3000}:3000"
+      - "127.0.0.1:${PORT:-3000}:3000"
     env_file:
       - path: .env
         required: false
@@ -32,6 +33,24 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  # Обратный прокси: лимиты запросов, таймауты, отсечение сканеров (deploy/nginx/nginx.conf)
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: mok-proxy
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    profiles: ["prod"]
 
   db:
     image: postgres:16-alpine

@@ -21,8 +21,8 @@ export const ok = <T>(data: T, init?: ResponseInit) => NextResponse.json(data, i
 /** IP клиента с учётом обратного прокси (nginx, Traefik и т. п.). */
 export function clientIp(req: NextRequest): string {
   return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown"
   );
 }

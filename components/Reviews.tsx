@@ -24,7 +24,8 @@ const plural = (n: number, [one, few, many]: [string, string, string]) => {
 const formatDate = (iso: string) => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+  // Явный часовой пояс: иначе сервер (UTC) и браузер гостя могут показать разные даты → ошибка гидратации
+  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Moscow" });
 };
 
 function Stars({ value, size = 14 }: { value: number; size?: number }) {

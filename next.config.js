@@ -9,7 +9,29 @@ const isPages = process.env.GITHUB_PAGES === "true";
 // Префикс пути на GitHub Pages: https://<user>.github.io/<repo>/ → "/<repo>"
 const basePath = process.env.NEXT_BASE_PATH || "";
 
+const isDev = process.env.NODE_ENV !== "production";
+
+/**
+ * Content-Security-Policy: страница может загружать скрипты только с нашего сайта,
+ * картинки — с нашего сайта и Яндекса, встраивать — только карту Яндекса.
+ * 'unsafe-inline' для скриптов нужен Next.js 14 без nonce; 'unsafe-eval' и ws: — только в разработке.
+ */
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://avatars.mds.yandex.net https://*.yandex.net https://*.yandex.ru",
+  "font-src 'self' data:",
+  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  "frame-src https://yandex.ru https://*.yandex.ru",
+  "frame-ancestors 'self'",
+  "form-action 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+].join("; ");
+
 const securityHeaders = [
+  { key: "Content-Security-Policy", value: csp },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
