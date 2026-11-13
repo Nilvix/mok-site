@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { VenuePage } from "@/components/VenuePage";
 import { VENUES } from "@/lib/venues";
 
-export const revalidate = 21600;
+// Контент из админки появляется на сайте не позже чем через 5 минут (или сразу после сохранения)
+export const revalidate = 300;
 
 const v = VENUES["322"];
 

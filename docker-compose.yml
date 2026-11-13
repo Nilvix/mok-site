@@ -1,5 +1,6 @@
-# Запуск: docker compose up -d --build
-# Логи:   docker compose logs -f web
+# Продакшен:  docker compose up -d --build        (сайт + база + бэкапы)
+# Только БД для разработки:  docker compose up -d db   → postgres://127.0.0.1:5432
+# Логи:       docker compose logs -f web
 services:
   web:
     build: .
@@ -13,6 +14,10 @@ services:
         required: false
     environment:
       NODE_ENV: production
+      DATABASE_URL: postgres://mok:${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env}@db:5432/mok
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       # Кэш Next.js переживает перезапуск контейнера
       - next-cache:/app/.next/cache
@@ -20,7 +25,7 @@ services:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 5s
-      start_period: 20s
+      start_period: 30s
       retries: 3
     logging:
       driver: json-file
@@ -28,17 +33,53 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Заготовка под базу данных (раскомментируй, когда понадобится хранить заявки, акции и т. п.)
-  # db:
-  #   image: postgres:16-alpine
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_DB: mok
-  #     POSTGRES_USER: mok
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env}
-  #   volumes:
-  #     - db-data:/var/lib/postgresql/data
+  db:
+    image: postgres:16-alpine
+    container_name: mok-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mok
+      POSTGRES_USER: mok
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env}
+    # Наружу — только на localhost (для разработки и ручного доступа с сервера)
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mok -d mok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Ежедневный бэкап базы: ./backups/mok-ГГГГ-ММ-ДД.sql.gz, хранятся 14 дней
+  backup:
+    image: postgres:16-alpine
+    container_name: mok-backup
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?задай POSTGRES_PASSWORD в .env}
+    volumes:
+      - ./backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          f=/backups/mok-$$(date +%F).sql.gz
+          pg_dump -h db -U mok mok | gzip > "$$f.tmp" && mv "$$f.tmp" "$$f" && echo "backup ok: $$f"
+          find /backups -name 'mok-*.sql.gz' -mtime +14 -delete
+          sleep 86400
+        done
+    profiles: ["prod"]
 
 volumes:
   next-cache:
-  # db-data:
+  db-data:

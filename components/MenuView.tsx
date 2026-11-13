@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { MenuCategory, MenuItem, MenuSection } from "@/lib/menu-220";
+import { menuPhoto } from "@/lib/menu-photos";
 
 const rub = (n: number) => n.toLocaleString("ru-RU");
 
@@ -18,10 +19,10 @@ function Category({ c }: { c: MenuCategory }) {
       id={c.id}
       className="scroll-mt-40 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02]"
     >
-      {c.photo && (
+      {menuPhoto(c.photo) && (
         <div className="relative aspect-[16/7] w-full overflow-hidden bg-coal">
           <Image
-            src={c.photo}
+            src={menuPhoto(c.photo)!}
             alt={c.title}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
@@ -46,9 +47,9 @@ function Category({ c }: { c: MenuCategory }) {
         <ul className="mt-5 space-y-3.5">
           {c.items.map((it, i) => (
             <li key={`${it.name}-${i}`} className="flex items-center gap-3">
-              {it.photo && (
+              {menuPhoto(it.photo) && (
                 <Image
-                  src={it.photo}
+                  src={menuPhoto(it.photo)!}
                   alt={it.name}
                   width={48}
                   height={48}

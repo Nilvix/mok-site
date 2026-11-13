@@ -14,8 +14,8 @@ npm run dev                  # http://localhost:3000
 ## Продакшен в Docker
 
 ```bash
-cp .env.example .env         # заполни SITE_URL, REVALIDATE_SECRET
-docker compose up -d --build # http://localhost:3000
+cp .env.example .env         # заполни POSTGRES_PASSWORD, ADMIN_LOGIN/ADMIN_PASSWORD, SITE_URL
+docker compose --profile prod up -d --build   # сайт + база + бэкапы, http://localhost:3000
 docker compose logs -f web   # логи (JSON, по строке на событие)
 ```
 
@@ -34,6 +34,36 @@ npm run start:standalone     # PORT=3000 по умолчанию
 
 На сервере перед контейнером ставится обратный прокси с HTTPS (nginx, Caddy или Traefik),
 который проксирует на порт 3000.
+
+## База данных и админ-панель
+
+- **PostgreSQL 16** в Docker, ORM — Drizzle (`lib/server/schema.ts`, миграции в `drizzle/`).
+- При старте сервера (`instrumentation.ts`) автоматически применяются миграции, пустая база
+  заполняется данными по умолчанию (`lib/venues.ts`, `lib/menu-220.ts`), а из `ADMIN_LOGIN` /
+  `ADMIN_PASSWORD` создаётся первый администратор.
+- Без `DATABASE_URL` сайт работает на данных по умолчанию (так собирается GitHub Pages).
+
+**Админ-панель:** `/admin` (незаметная ссылка — значок «©» в футере). Там:
+акция на первом экране, контакты и ссылка на бронь, карточки услуг, меню (цены, наличие,
+порядок, фото, разделы). Изменения появляются на сайте сразу после сохранения.
+
+Защита: пароль хранится как scrypt-хэш; сессия — случайный токен в httpOnly-cookie
+(в базе только его SHA-256), живёт 12 часов; 5 неудачных входов с одного IP или 10 на один
+логин — блокировка на 15 минут; все действия пишутся в журнал (`audit_log`);
+формы проверяются на сервере (zod), Server Actions защищены от CSRF проверкой Origin.
+
+```bash
+docker compose up -d db                 # база для разработки на 127.0.0.1:5432
+npm run db:migrate                      # миграции и начальные данные вручную
+npm run admin:create -- <логин>         # создать админа или сменить пароль
+npm run db:generate                     # новая миграция после правки schema.ts
+```
+
+Бэкапы в продакшене: `docker compose --profile prod up -d` поднимает сервис `backup`,
+который раз в сутки делает `pg_dump` в `./backups/` и хранит 14 дней.
+
+> Не запускайте `npm run build:pages` при работающем `npm run dev` — сборки мешают друг другу;
+> после неё перезапустите dev-сервер.
 
 ## GitHub Pages (статическая версия)
 

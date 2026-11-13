@@ -23,7 +23,7 @@ export function Hero() {
   const reduce = useReducedMotion();
   const venue = useVenue();
   const rating = useVenueRating();
-  const isNew = venue.id === "322";
+  const promo = venue.promo?.enabled ? venue.promo : null;
 
   return (
     <section id="top" className="relative min-h-[100svh] w-full overflow-hidden">
@@ -111,6 +111,7 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
+        {promo && (
         <motion.aside
           id="promo"
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: 40, scale: 0.98 }}
@@ -124,52 +125,47 @@ export function Hero() {
 
             <div className="relative">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-                Розыгрыш · новое заведение
+                {promo.badge}
               </span>
 
               <h3 className="mt-5 text-2xl font-black leading-tight text-white md:text-3xl">
-                {isNew ? "Мы открылись — разыгрываем 30 000 ₽" : "Мы открылись на Октябрьской, 322 — разыгрываем 30 000 ₽"}
+                {promo.title}
               </h3>
 
-              <p className="mt-3 text-sm leading-relaxed text-white/60">
-                За каждые 2 500 ₽ в чеке — билет с личным номером. Итоги подведём,
-                когда будут вручены все 300 билетов.
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/60">
+                {promo.text}
               </p>
 
-              <ul className="mt-5 space-y-2 text-sm">
-                {[
-                  ["1 место", "30 000 ₽ деньгами"],
-                  ["2 место", "сертификат на 5 000 ₽"],
-                  ["3 место", "сертификат на 3 000 ₽"],
-                  ["4 место", "сертификат на 2 000 ₽"],
-                ].map(([place, prize], i) => (
-                  <li
-                    key={place}
-                    className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0"
-                  >
-                    <span className={i === 0 ? "font-semibold text-accent" : "text-white/50"}>
-                      {place}
-                    </span>
-                    <span className={i === 0 ? "font-bold text-white" : "text-white/80"}>
-                      {prize}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {promo.prizes.length > 0 && (
+                <ul className="mt-5 space-y-2 text-sm">
+                  {promo.prizes.map(({ place, prize }, i) => (
+                    <li
+                      key={`${place}-${i}`}
+                      className="flex items-center justify-between gap-3 border-b border-white/5 pb-2 last:border-0"
+                    >
+                      <span className={i === 0 ? "font-semibold text-accent" : "text-white/50"}>
+                        {place}
+                      </span>
+                      <span className={i === 0 ? "text-right font-bold text-white" : "text-right text-white/80"}>
+                        {prize}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <div className="mt-7 flex items-end justify-between gap-4">
                 <div>
-                  <div className="flex items-baseline gap-2">
+                  {promo.counterValue && (
                     <span className="text-4xl font-black leading-none text-white">
-                      300
+                      {promo.counterValue}
                     </span>
-                    <span className="text-xs uppercase tracking-widest text-white/50">
-                      билетов
-                    </span>
-                  </div>
-                  <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-white/40">
-                    в розыгрыше
-                  </div>
+                  )}
+                  {promo.counterLabel && (
+                    <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-white/40">
+                      {promo.counterLabel}
+                    </div>
+                  )}
                 </div>
                 <Button
                   href={venue.phoneHref}
@@ -182,6 +178,7 @@ export function Hero() {
             </div>
           </div>
         </motion.aside>
+        )}
       </div>
 
       <motion.a

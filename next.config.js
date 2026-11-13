@@ -20,12 +20,21 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: { APP_VERSION: version },
+  env: {
+    APP_VERSION: version,
+    // Скрытая ссылка на админку в футере — только там, где админка есть (не на GitHub Pages)
+    NEXT_PUBLIC_ADMIN_ENABLED: isPages ? "" : "1",
+  },
+  experimental: {
+    // instrumentation.ts: миграции и подготовка базы при старте сервера
+    instrumentationHook: true,
+    serverComponentsExternalPackages: ["postgres"],
+  },
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  // API-роуты лежат в файлах route.api.ts — в статической сборке они просто не подхватываются
-  pageExtensions: isPages ? ["tsx", "ts"] : ["api.ts", "tsx", "ts"],
+  // API и админка лежат в файлах *.api.ts / *.api.tsx — в статической сборке они не подхватываются
+  pageExtensions: isPages ? ["tsx", "ts"] : ["api.ts", "api.tsx", "tsx", "ts"],
   images: {
     // На GitHub Pages нет сервера для оптимизации — картинки отдаются напрямую с Яндекса
     unoptimized: isPages,

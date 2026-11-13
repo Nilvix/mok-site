@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { MenuView } from "@/components/MenuView";
 import { VenueProvider } from "@/components/VenueProvider";
-import { MENU_220 } from "@/lib/menu-220";
+import { getMenu, getVenueContent } from "@/lib/content";
 import { VENUES } from "@/lib/venues";
 
 const v = VENUES["220"];
@@ -14,9 +14,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/menu" },
 };
 
-export default function MenuPage() {
+export const revalidate = 300;
+
+export default async function MenuPage() {
+  const [venue, menu] = await Promise.all([getVenueContent("220"), getMenu("220")]);
   return (
-    <VenueProvider id="220">
+    <VenueProvider venue={venue}>
       <Header />
       <main className="mx-auto max-w-7xl px-5 pb-24 pt-28 md:px-8 md:pt-32">
         <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.28em] text-accent">
@@ -30,7 +33,7 @@ export default function MenuPage() {
           подача блюд может отличаться.
         </p>
         <div className="mt-10">
-          <MenuView sections={MENU_220} />
+          <MenuView sections={menu} />
         </div>
       </main>
       <Footer />

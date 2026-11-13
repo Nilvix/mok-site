@@ -10,13 +10,14 @@ import { Footer } from "@/components/Footer";
 import { VenueProvider } from "@/components/VenueProvider";
 import { getYandexData } from "@/lib/yandex";
 import type { VenueId } from "@/lib/venues";
+import { getVenueContent } from "@/lib/content";
 
 /** Главная страница заведения: одинаковая структура, свои данные и палитра. */
 export async function VenuePage({ id }: { id: VenueId }) {
-  const yandex = await getYandexData(id);
+  const [yandex, venue] = await Promise.all([getYandexData(id), getVenueContent(id)]);
 
   return (
-    <VenueProvider id={id} rating={yandex.rating}>
+    <VenueProvider venue={venue} rating={yandex.rating}>
       <Header />
       <main>
         <Hero />

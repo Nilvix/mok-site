@@ -33,6 +33,8 @@ RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
 # standalone-сервер + статика (папки public в проекте нет)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Миграции базы применяются при старте сервера (instrumentation.ts)
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 
 # Кэш Next (оптимизированные картинки, данные Яндекса) — должен быть доступен на запись
 RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next/cache
@@ -40,7 +42,7 @@ RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next/cache
 USER nextjs
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/api/health >/dev/null || exit 1
 
 CMD ["node", "server.js"]

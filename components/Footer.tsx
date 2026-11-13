@@ -101,7 +101,17 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 text-xs text-white/40 md:flex-row md:items-center">
-          <div>© {new Date().getFullYear()} {SITE.name}. Все права защищены.</div>
+          <div>
+            {process.env.NEXT_PUBLIC_ADMIN_ENABLED ? (
+              // Незаметный вход в админ-панель: значок ©
+              <Link href="/admin" aria-label="Вход для администратора" className="cursor-text hover:text-white/40">
+                ©
+              </Link>
+            ) : (
+              "©"
+            )}{" "}
+            {new Date().getFullYear()} {SITE.name}. Все права защищены.
+          </div>
           <div className="flex gap-6">
             <Link href="/privacy" className="transition-colors hover:text-white/70">
               Политика конфиденциальности

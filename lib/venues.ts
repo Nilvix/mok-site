@@ -13,6 +13,36 @@ export type ServiceCard = {
   href?: string;
 };
 
+export type Prize = { place: string; prize: string };
+
+/** Блок акции/розыгрыша на первом экране. */
+export type Promo = {
+  enabled: boolean;
+  badge: string;
+  title: string;
+  text: string;
+  prizes: Prize[];
+  counterValue: string;
+  counterLabel: string;
+};
+
+const RAFFLE_PRIZES: Prize[] = [
+  { place: "1 место", prize: "30 000 ₽ деньгами" },
+  { place: "2 место", prize: "сертификат на 5 000 ₽" },
+  { place: "3 место", prize: "сертификат на 3 000 ₽" },
+  { place: "4 место", prize: "сертификат на 2 000 ₽" },
+];
+
+const RAFFLE_TEXT =
+  "За каждые 2 500 ₽ в чеке — билет с личным номером. Итоги подведём, когда будут вручены все 300 билетов.";
+
+/** tel:-ссылка из номера в любом формате: "+7 (938) 027-02-20" → "tel:+79380270220" */
+export function telHref(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const normalized = digits.length === 11 && digits.startsWith("8") ? `7${digits.slice(1)}` : digits;
+  return `tel:+${normalized}`;
+}
+
 export type Venue = {
   id: VenueId;
   /** Корень страниц заведения: "" или "/322" */
@@ -33,6 +63,7 @@ export type Venue = {
   yandexOrgId: string;
   images: { hero: string; about: string };
   services: ServiceCard[];
+  promo: Promo | null;
 };
 
 const BOOKING_NOTE =
@@ -54,6 +85,15 @@ export const VENUES: Record<VenueId, Venue> = {
     bookingUrl: "https://axle.market/mok220_booking",
     coords: [42.06066, 44.220692],
     yandexOrgId: "175130855154",
+    promo: {
+      enabled: true,
+      badge: "Розыгрыш · новое заведение",
+      title: "Мы открылись на Октябрьской, 322 — разыгрываем 30 000 ₽",
+      text: RAFFLE_TEXT,
+      prizes: RAFFLE_PRIZES,
+      counterValue: "300",
+      counterLabel: "билетов в розыгрыше",
+    },
     images: {
       hero: "https://avatars.mds.yandex.net/get-altay/11203687/2a0000019148655dd4c8bec019213073e678/XXXL",
       about: "https://avatars.mds.yandex.net/get-altay/14306621/2a0000019148652817455078f6206d0ef135/XXXL",
@@ -110,6 +150,15 @@ export const VENUES: Record<VenueId, Venue> = {
     bookingUrl: "https://axle.market/mok322_booking",
     coords: [42.054721, 44.20028],
     yandexOrgId: "167567837497",
+    promo: {
+      enabled: true,
+      badge: "Розыгрыш · открытие",
+      title: "Мы открылись — разыгрываем 30 000 ₽",
+      text: RAFFLE_TEXT,
+      prizes: RAFFLE_PRIZES,
+      counterValue: "300",
+      counterLabel: "билетов в розыгрыше",
+    },
     images: {
       hero: "https://avatars.mds.yandex.net/get-altay/17651669/2a0000019ecb5fd505d5937b53bff87ee2ce/XXXL",
       about: "https://avatars.mds.yandex.net/get-altay/20105000/2a0000019f4d7baf18713a578d6d68441187/XXXL",
