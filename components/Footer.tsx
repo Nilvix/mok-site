@@ -6,6 +6,7 @@ import { LogoMark } from "./ui/LogoMark";
 import { SITE } from "@/lib/site-config";
 import { VENUE_LIST } from "@/lib/venues";
 import { useVenue } from "./VenueProvider";
+import { useMenu } from "./menu/MenuProvider";
 
 
 const SOCIALS = [
@@ -15,11 +16,12 @@ const SOCIALS = [
 
 export function Footer() {
   const venue = useVenue();
+  const menu = useMenu();
   const home = venue.basePath || "/";
-  const NAV = [
+  const NAV: { href: string; label: string; menu?: true }[] = [
     { href: `${home}#about`, label: "О нас" },
     { href: `${home}#services`, label: "Услуги" },
-    ...(venue.id === "220" ? [{ href: "/menu", label: "Меню" }] : []),
+    ...(menu?.available ? [{ href: "#menu", label: "Меню", menu: true as const }] : []),
     { href: `${home}#gallery`, label: "Галерея" },
     { href: `${home}#reviews`, label: "Отзывы" },
     { href: `${home}#contact`, label: "Контакты" },
@@ -59,12 +61,19 @@ export function Footer() {
             <ul className="mt-5 space-y-3">
               {NAV.map((n) => (
                 <li key={n.href}>
-                  <Link
-                    href={n.href}
-                    className="text-sm text-white/70 transition-colors hover:text-accent"
-                  >
-                    {n.label}
-                  </Link>
+                  {n.menu ? (
+                    <button
+                      type="button"
+                      onClick={() => menu?.open()}
+                      className="text-sm text-white/70 transition-colors hover:text-accent"
+                    >
+                      {n.label}
+                    </button>
+                  ) : (
+                    <Link href={n.href} className="text-sm text-white/70 transition-colors hover:text-accent">
+                      {n.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

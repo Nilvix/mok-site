@@ -4,7 +4,7 @@
  * Не импортирует server-only, поэтому работает и в обычных скриптах.
  */
 import path from "node:path";
-import { count, lt } from "drizzle-orm";
+import { count, lt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
@@ -56,7 +56,6 @@ export async function bootstrapDatabase(url: string, log: Log = console.log) {
                 slug: c.id,
                 title: c.title,
                 volumes: c.volumes ?? null,
-                photo: c.photo ?? null,
                 adultsOnly: !!c.adultsOnly,
                 position: catPos++,
               })
@@ -92,6 +91,14 @@ export async function bootstrapDatabase(url: string, log: Log = console.log) {
         }
       }
     }
+
+    // Разовые правки данных (безопасно запускать повторно):
+    // старые фото из печатного меню убраны — остаются только загруженные в админке
+    await db.execute(sql`update menu_items set photo = null where photo is not null and photo !~ '^[a-z0-9]{24}[.]webp$'`);
+    await db.execute(sql`update menu_categories set photo = null where photo is not null`);
+    // карточки услуг теперь открывают всплывающее меню
+    await db.execute(sql`update services set href = 'menu:kitchen' where href = '/menu#kitchen'`);
+    await db.execute(sql`update services set href = 'menu:bar' where href = '/menu#bar'`);
 
     // Чистка: просроченные сессии и старые попытки входа
     await db.delete(schema.sessions).where(lt(schema.sessions.expiresAt, new Date()));

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Shell } from "@/components/admin/Shell";
 import { DeleteButton, SubmitButton } from "@/components/admin/buttons";
 import { Card, Checkbox, Field, Notice, inputCls } from "@/components/admin/ui";
-import { MENU_PHOTO_KEYS } from "@/lib/menu-photos";
+import { mediaUrl } from "@/lib/media-url";
 import { requireAdmin } from "@/lib/server/auth";
 import { requireDb } from "@/lib/server/db";
 import { menuCategories, menuItems } from "@/lib/server/schema";
@@ -19,19 +19,6 @@ import {
 } from "../../actions";
 
 type Props = { params: { venue: string }; searchParams: { saved?: string; error?: string } };
-
-function PhotoSelect({ name, value }: { name: string; value: string | null }) {
-  return (
-    <select name={name} defaultValue={value ?? ""} className={inputCls}>
-      <option value="">без фото</option>
-      {MENU_PHOTO_KEYS.map((k) => (
-        <option key={k} value={k}>
-          {k}
-        </option>
-      ))}
-    </select>
-  );
-}
 
 export default async function MenuAdmin({ params, searchParams }: Props) {
   const admin = await requireAdmin();
@@ -54,6 +41,7 @@ export default async function MenuAdmin({ params, searchParams }: Props) {
       <h1 className="mt-2 text-3xl font-black">Меню · {v.short}</h1>
       <p className="mt-2 mb-8 text-sm text-white/45">
         Цена в рублях. Для разных объёмов — через «/», например 350/620. Снимите «в наличии», чтобы скрыть позицию с сайта.
+        Фото: JPG, PNG, WebP или HEIC до 10 МБ — сайт сам уменьшит и сожмёт его.
       </p>
 
       <Notice saved={searchParams.saved} error={searchParams.error} />
@@ -65,7 +53,7 @@ export default async function MenuAdmin({ params, searchParams }: Props) {
             <Card key={c.id} id={`cat-${c.id}`} title={`${c.section === "kitchen" ? "Кухня" : "Бар"} · ${c.title}`}>
               <details className="mb-5 rounded-2xl border border-white/5 p-4">
                 <summary className="cursor-pointer text-sm text-white/60">Настройки раздела</summary>
-                <form action={saveCategory} className="mt-4 grid gap-3 sm:grid-cols-4">
+                <form action={saveCategory} className="mt-4 grid gap-3 sm:grid-cols-3">
                   <input type="hidden" name="id" value={c.id} />
                   <input type="hidden" name="venue" value={id} />
                   <Field label="Название">
@@ -74,13 +62,10 @@ export default async function MenuAdmin({ params, searchParams }: Props) {
                   <Field label="Объёмы" hint="0,4 л / 1 л">
                     <input name="volumes" defaultValue={c.volumes?.join(" / ") ?? ""} maxLength={60} className={inputCls} />
                   </Field>
-                  <Field label="Фото раздела">
-                    <PhotoSelect name="photo" value={c.photo} />
-                  </Field>
                   <div className="flex items-end pb-2">
                     <Checkbox name="adultsOnly" label="18+" defaultChecked={c.adultsOnly} />
                   </div>
-                  <div className="flex flex-wrap gap-3 sm:col-span-4">
+                  <div className="flex flex-wrap gap-3 sm:col-span-3">
                     <SubmitButton variant="ghost">Сохранить раздел</SubmitButton>
                   </div>
                 </form>
@@ -93,9 +78,19 @@ export default async function MenuAdmin({ params, searchParams }: Props) {
               <ul className="space-y-2">
                 {list.map((it) => (
                   <li key={it.id} id={`item-${it.id}`} className={`scroll-mt-24 rounded-2xl border p-3 ${it.available ? "border-white/5" : "border-white/5 opacity-50"}`}>
-                    <form action={saveMenuItem} className="grid items-end gap-2 sm:grid-cols-[2fr_1fr_1fr_1fr_auto]">
+                    <form action={saveMenuItem} className="grid items-end gap-2 sm:grid-cols-[72px_2fr_1fr_1fr_auto]">
                       <input type="hidden" name="id" value={it.id} />
                       <input type="hidden" name="venue" value={id} />
+                      <div className="row-span-2 self-start">
+                        {mediaUrl(it.photo) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={mediaUrl(it.photo)} alt="" className="h-[72px] w-[72px] rounded-xl object-cover" />
+                        ) : (
+                          <div className="grid h-[72px] w-[72px] place-items-center rounded-xl border border-dashed border-white/15 text-[10px] text-white/30">
+                            нет фото
+                          </div>
+                        )}
+                      </div>
                       <Field label="Название">
                         <input name="name" defaultValue={it.name} required maxLength={120} className={inputCls} />
                       </Field>
@@ -105,12 +100,22 @@ export default async function MenuAdmin({ params, searchParams }: Props) {
                       <Field label="Пометка">
                         <input name="note" defaultValue={it.note ?? ""} maxLength={80} className={inputCls} />
                       </Field>
-                      <Field label="Фото">
-                        <PhotoSelect name="photo" value={it.photo} />
-                      </Field>
                       <div className="flex flex-col gap-2 pb-0.5">
                         <Checkbox name="available" label="в наличии" defaultChecked={it.available} />
                         <SubmitButton className="px-4 py-1.5">Сохранить</SubmitButton>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 sm:col-span-4">
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 px-3.5 py-1.5 text-xs text-white/70 hover:border-accent hover:text-accent">
+                          {mediaUrl(it.photo) ? "Заменить фото" : "Загрузить фото"}
+                          <input
+                            type="file"
+                            name="photoFile"
+                            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif"
+                            className="max-w-[180px] text-[11px] text-white/50 file:hidden"
+                          />
+                        </label>
+                        {mediaUrl(it.photo) && <Checkbox name="removePhoto" label="убрать фото" />}
+                        <span className="text-[11px] text-white/30">выберите файл и нажмите «Сохранить»</span>
                       </div>
                     </form>
                     <div className="mt-2 flex gap-2">

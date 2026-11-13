@@ -9,7 +9,10 @@ export type ServiceCard = {
   icon: "steam" | "drinks" | "kitchen" | "games" | "events" | "booking";
   title: string;
   text: string;
-  /** Куда ведёт карточка; без href — некликабельна. */
+  /**
+   * Что делает карточка: "menu:kitchen" / "menu:bar" — открывает меню, "#promo" — якорь,
+   * "https://…" — внешняя ссылка; без href карточка некликабельна.
+   */
   href?: string;
 };
 
@@ -108,13 +111,13 @@ export const VENUES: Record<VenueId, Venue> = {
         icon: "drinks",
         title: "Лимонады, кофе и милкшейки",
         text: "Домашние лимонады, свежесваренный кофе, милкшейки и большая чайная карта — вкусно и без алкоголя.",
-        href: "/menu#bar",
+        href: "menu:bar",
       },
       {
         icon: "kitchen",
         title: "Кухня до 2:30",
         text: "Салаты, супы, горячее, пицца, бургеры и десерты. Кухня работает до 2:30 — поужинать можно и глубокой ночью.",
-        href: "/menu#kitchen",
+        href: "menu:kitchen",
       },
       {
         icon: "games",

@@ -8,23 +8,24 @@ import {
   useScroll,
   useSpring,
 } from "framer-motion";
-import { ArrowRightLeft, CalendarCheck, Menu, Phone, X } from "lucide-react";
+import { CalendarCheck, Menu, Phone, X } from "lucide-react";
 import { Button } from "./ui/Button";
 import { LogoMark } from "./ui/LogoMark";
 import { SITE } from "@/lib/site-config";
-import { otherVenue } from "@/lib/venues";
 import { useVenue } from "./VenueProvider";
+import { useMenu } from "./menu/MenuProvider";
+import { VenueCards, VenueSwitch } from "./VenueSwitch";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/motion";
 
 export function Header() {
   const venue = useVenue();
-  const other = otherVenue(venue);
+  const menu = useMenu();
   const home = venue.basePath || "/";
-  const NAV = [
+  const NAV: { href: string; label: string; menu?: true }[] = [
     { href: `${home}#about`, label: "О нас" },
     { href: `${home}#services`, label: "Услуги" },
-    ...(venue.id === "220" ? [{ href: "/menu", label: "Меню" }] : []),
+    ...(menu?.available ? [{ href: "#menu", label: "Меню", menu: true as const }] : []),
     { href: `${home}#gallery`, label: "Галерея" },
     { href: `${home}#reviews`, label: "Отзывы" },
     { href: `${home}#contact`, label: "Контакты" },
@@ -72,32 +73,37 @@ export function Header() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 md:px-8">
           <Link href={home} aria-label={`${SITE.name} — на главную`}>
-            <LogoMark className="w-[88px] md:w-[104px]" />
+            <LogoMark className="w-[76px] sm:w-[88px] md:w-[104px]" />
           </Link>
 
-          <nav className="hidden items-center gap-7 lg:flex xl:gap-9">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group relative text-sm font-medium text-white/70 transition-colors hover:text-white"
-              >
-                {item.label}
-                <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full" />
-              </Link>
-            ))}
+          <nav className="hidden items-center gap-8 whitespace-nowrap xl:flex">
+            {NAV.map((item) =>
+              item.menu ? (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => menu?.open()}
+                  aria-haspopup="dialog"
+                  className="group relative text-sm font-medium text-white/70 transition-colors hover:text-white"
+                >
+                  {item.label}
+                  <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full" />
+                </button>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group relative text-sm font-medium text-white/70 transition-colors hover:text-white"
+                >
+                  {item.label}
+                  <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-accent transition-all duration-300 group-hover:w-full" />
+                </Link>
+              ),
+            )}
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Link
-              href={other.basePath || "/"}
-              title={`Перейти в МОК на ${other.short}`}
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-all hover:border-accent hover:text-accent active:scale-95"
-            >
-              <ArrowRightLeft size={15} />
-              <span className="hidden xl:inline">{other.short}</span>
-              <span className="xl:hidden">{other.id}</span>
-            </Link>
+            <VenueSwitch current={venue} />
             <a
               href={venue.phoneHref}
               aria-label={`Позвонить: ${venue.phone}`}
@@ -109,19 +115,30 @@ export function Header() {
             <Button href={venue.bookingUrl} variant="primary" className="px-6 py-3 text-sm">
               <CalendarCheck size={16} /> Забронировать
             </Button>
+            {/* На средних экранах разделы прячутся в меню-бургер */}
+            <button
+              aria-label={open ? "Закрыть меню" : "Открыть меню"}
+              aria-expanded={open}
+              onClick={() => setOpen((v) => !v)}
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-white transition-colors hover:border-accent xl:hidden"
+            >
+              {open ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
 
           <div className="flex items-center gap-2 lg:hidden">
+          <VenueSwitch current={venue} compact />
           <a
             href={venue.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Забронировать стол"
             className={cn(
-              "inline-flex h-11 items-center gap-1.5 rounded-full bg-accent px-4 text-sm font-semibold text-white transition-all hover:bg-accent-dark active:scale-95",
+              "grid h-11 w-11 place-items-center rounded-full bg-accent text-white transition-all hover:bg-accent-dark active:scale-95 sm:inline-flex sm:w-auto sm:gap-1.5 sm:px-4 sm:text-sm sm:font-semibold",
               pastHero && "max-md:hidden",
             )}
           >
-            <CalendarCheck size={15} /> Бронь
+            <CalendarCheck size={16} /> <span className="hidden sm:inline">Бронь</span>
           </a>
           <button
             aria-label={open ? "Закрыть меню" : "Открыть меню"}
@@ -147,7 +164,7 @@ export function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-ink/95 backdrop-blur-xl lg:hidden"
+            className="fixed inset-0 z-40 bg-ink/95 backdrop-blur-xl xl:hidden"
           >
             <motion.nav
               initial="closed"
@@ -157,8 +174,15 @@ export function Header() {
                 open: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } },
                 closed: {},
               }}
-              className="flex h-full flex-col items-center justify-center gap-7"
+              className="flex h-full flex-col items-center justify-center gap-6 px-5"
             >
+              <motion.div
+                variants={{ closed: { opacity: 0, y: 20 }, open: { opacity: 1, y: 0 } }}
+                transition={{ duration: 0.5, ease: EASE }}
+                className="mb-2 flex w-full justify-center"
+              >
+                <VenueCards current={venue} onNavigate={() => setOpen(false)} />
+              </motion.div>
               {NAV.map((item) => (
                 <motion.div
                   key={item.href}
@@ -168,13 +192,26 @@ export function Header() {
                   }}
                   transition={{ duration: 0.5, ease: EASE }}
                 >
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="text-3xl font-black uppercase tracking-tight text-white/90 transition-colors hover:text-accent"
-                  >
-                    {item.label}
-                  </Link>
+                  {item.menu ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        menu?.open();
+                      }}
+                      className="text-3xl font-black uppercase tracking-tight text-white/90 transition-colors hover:text-accent"
+                    >
+                      {item.label}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="text-3xl font-black uppercase tracking-tight text-white/90 transition-colors hover:text-accent"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </motion.div>
               ))}
               <motion.div
@@ -191,13 +228,6 @@ export function Header() {
                 <Button href={venue.phoneHref} variant="outline" onClick={() => setOpen(false)}>
                   <Phone size={16} /> {venue.phone}
                 </Button>
-                <Link
-                  href={other.basePath || "/"}
-                  onClick={() => setOpen(false)}
-                  className="mt-2 inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-accent"
-                >
-                  <ArrowRightLeft size={15} /> МОК на {other.short}
-                </Link>
               </motion.div>
             </motion.nav>
           </motion.div>

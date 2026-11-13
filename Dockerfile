@@ -23,6 +23,7 @@ FROM node:${NODE_VERSION} AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production \
+    UPLOADS_DIR=/app/uploads \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
@@ -37,7 +38,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 
 # Кэш Next (оптимизированные картинки, данные Яндекса) — должен быть доступен на запись
-RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next/cache
+RUN mkdir -p .next/cache /app/uploads && chown -R nextjs:nodejs .next/cache /app/uploads
 
 USER nextjs
 EXPOSE 3000

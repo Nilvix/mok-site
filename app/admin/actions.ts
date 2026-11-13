@@ -7,7 +7,7 @@ import { z } from "zod";
 import { audit, login, logout, requireAdmin } from "@/lib/server/auth";
 import { requireDb } from "@/lib/server/db";
 import { menuCategories, menuItems, promos, services, venues } from "@/lib/server/schema";
-import { MENU_PHOTO_KEYS } from "@/lib/menu-photos";
+import { UploadError, deleteImage, saveImage } from "@/lib/server/media";
 import type { VenueId } from "@/lib/venues";
 
 /* ---------- общее ---------- */
@@ -21,16 +21,20 @@ const url = z
   .trim()
   .max(500)
   .refine((v) => /^https:\/\/[^\s]+$/.test(v), "Ссылка должна начинаться с https://");
-/** Внутренняя ссылка (#promo, /menu#bar) или внешняя https:// */
+/** menu:kitchen / menu:bar (открыть меню), якорь #promo, внутренняя /… или внешняя https:// */
 const href = z
   .string()
   .trim()
   .max(300)
-  .refine((v) => v === "" || /^(#|\/)[^\s]*$/.test(v) || /^https:\/\/[^\s]+$/.test(v), "Неверная ссылка");
-const photoKey = z
-  .string()
-  .trim()
-  .refine((v) => v === "" || (MENU_PHOTO_KEYS as string[]).includes(v), "Неизвестное фото");
+  .refine(
+    (v) => v === "" || /^menu:(kitchen|bar)$/.test(v) || /^(#|\/)[^\s]*$/.test(v) || /^https:\/\/[^\s]+$/.test(v),
+    "Неверная ссылка",
+  );
+/** Файл фото из формы (пустой input даёт File нулевого размера). */
+function uploadedFile(fd: FormData, name: string): File | null {
+  const f = fd.get(name);
+  return f instanceof File && f.size > 0 ? f : null;
+}
 
 /** "350" | "350/620" | "350 / 620 ₽" → [350, 620] */
 const prices = z
@@ -50,7 +54,6 @@ function fail(path: string, error: z.ZodError | string): never {
 
 function refreshSite(venue: VenueId) {
   revalidatePath(venue === "220" ? "/" : "/322");
-  revalidatePath("/menu");
 }
 
 /* ---------- вход / выход ---------- */
@@ -185,19 +188,34 @@ export async function saveMenuItem(fd: FormData) {
       name: required(120, "Название"),
       prices,
       note: str(80),
-      photo: photoKey,
       available: z.string().optional(),
+      removePhoto: z.string().optional(),
     })
     .safeParse(form(fd));
   if (!data.success) fail(menuPath(fd.get("venue")?.toString() ?? "220"), data.error);
-  const { id, note, photo, available, ...rest } = data.data;
+  const { id, note, available, removePhoto, ...rest } = data.data;
   const db = requireDb();
   const [item] = await db.select().from(menuItems).where(eq(menuItems.id, id));
   if (!item) fail("/admin", "Позиция не найдена");
   const venue = await categoryVenue(item.categoryId);
-  const set = { ...rest, note: note || null, photo: photo || null, available: available === "on" };
+
+  // Фото: новое заменяет старое; галочка «убрать фото» удаляет его
+  let photo = item.photo;
+  const file = uploadedFile(fd, "photoFile");
+  if (file) {
+    try {
+      photo = await saveImage(file);
+    } catch (e) {
+      fail(menuPath(venue), e instanceof UploadError ? e.message : "Не удалось сохранить фото");
+    }
+  } else if (removePhoto === "on") {
+    photo = null;
+  }
+
+  const set = { ...rest, note: note || null, photo, available: available === "on" };
   await db.update(menuItems).set(set).where(eq(menuItems.id, id));
-  await audit(admin, "menu.item.update", { venue, id, ...set });
+  if (photo !== item.photo) await deleteImage(item.photo);
+  await audit(admin, "menu.item.update", { venue, id, ...set, photoChanged: photo !== item.photo });
   refreshSite(venue);
   redirect(`${menuPath(venue)}?saved=item#item-${id}`);
 }
@@ -230,6 +248,7 @@ export async function deleteMenuItem(fd: FormData) {
   if (!item) fail("/admin", "Позиция не найдена");
   const venue = await categoryVenue(item.categoryId);
   await db.delete(menuItems).where(eq(menuItems.id, id.data));
+  await deleteImage(item.photo);
   await audit(admin, "menu.item.delete", { venue, item });
   refreshSite(venue);
   redirect(`${menuPath(venue)}?saved=deleted#cat-${item.categoryId}`);
@@ -270,17 +289,15 @@ export async function saveCategory(fd: FormData) {
       id: z.coerce.number().int().positive(),
       title: required(60, "Название раздела"),
       volumes: str(60),
-      photo: photoKey,
       adultsOnly: z.string().optional(),
     })
     .safeParse(form(fd));
   if (!data.success) fail(menuPath(fd.get("venue")?.toString() ?? "220"), data.error);
-  const { id, volumes, photo, adultsOnly, title } = data.data;
+  const { id, volumes, adultsOnly, title } = data.data;
   const venue = await categoryVenue(id);
   const set = {
     title,
     volumes: volumes ? volumes.split("/").map((s) => s.trim()).filter(Boolean) : null,
-    photo: photo || null,
     adultsOnly: adultsOnly === "on",
   };
   await requireDb().update(menuCategories).set(set).where(eq(menuCategories.id, id));
@@ -321,7 +338,9 @@ export async function deleteCategory(fd: FormData) {
   const venue = await categoryVenue(id.data);
   const db = requireDb();
   const [cat] = await db.select().from(menuCategories).where(and(eq(menuCategories.id, id.data)));
+  const photos = await db.select({ photo: menuItems.photo }).from(menuItems).where(eq(menuItems.categoryId, id.data));
   await db.delete(menuCategories).where(eq(menuCategories.id, id.data));
+  await Promise.all(photos.map((p) => deleteImage(p.photo)));
   await audit(admin, "menu.category.delete", { venue, category: cat });
   refreshSite(venue);
   redirect(`${menuPath(venue)}?saved=deleted`);

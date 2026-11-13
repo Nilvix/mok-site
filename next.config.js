@@ -50,7 +50,9 @@ const nextConfig = {
   experimental: {
     // instrumentation.ts: миграции и подготовка базы при старте сервера
     instrumentationHook: true,
-    serverComponentsExternalPackages: ["postgres"],
+    serverComponentsExternalPackages: ["postgres", "sharp"],
+    // Загрузка фото блюд из админки
+    serverActions: { bodySizeLimit: "12mb" },
   },
   reactStrictMode: true,
   poweredByHeader: false,

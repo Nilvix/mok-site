@@ -69,7 +69,7 @@ export const menuCategories = pgTable(
     slug: text("slug").notNull(),
     title: text("title").notNull(),
     volumes: jsonb("volumes").$type<string[]>(),
-    /** Ключ фото из assets/menu (lib/menu-photos.ts) */
+    /** Не используется (фото есть только у позиций) */
     photo: text("photo"),
     adultsOnly: boolean("adults_only").default(false).notNull(),
     position: integer("position").notNull(),
@@ -88,6 +88,7 @@ export const menuItems = pgTable(
     /** Цены в рублях; несколько — для разных объёмов */
     prices: jsonb("prices").$type<number[]>().notNull(),
     note: text("note"),
+    /** Имя загруженного фото в UPLOADS_DIR (abc….webp) */
     photo: text("photo"),
     available: boolean("available").default(true).notNull(),
     position: integer("position").notNull(),

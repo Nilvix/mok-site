@@ -83,7 +83,7 @@ export default async function VenueAdmin({ params, searchParams }: Props) {
           </form>
         </Card>
 
-        <Card id="services" title="Карточки «Всё для идеального вечера»" hint="Ссылка: /menu#bar, #promo, https://… или пусто — тогда карточка не кликабельна.">
+        <Card id="services" title="Карточки «Всё для идеального вечера»" hint="Ссылка: menu:kitchen — открыть меню кухни, menu:bar — меню бара, #promo — к акции, https://… — внешний сайт. Пусто — карточка не кликабельна.">
           <form action={saveServices} className="space-y-5">
             <input type="hidden" name="venue" value={id} />
             {cards.map((c) => (

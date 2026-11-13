@@ -46,3 +46,6 @@ next-env.d.ts
 /.claude/
 
 backups/
+
+# фото, загруженные в админке
+/uploads/

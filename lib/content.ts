@@ -5,7 +5,7 @@ import { logger } from "./server/logger";
 import { menuCategories, menuItems, promos, services, venues } from "./server/schema";
 import { MENU_220, type MenuSection } from "./menu-220";
 import { VENUES, telHref, type ServiceCard, type Venue, type VenueId } from "./venues";
-import type { MenuPhoto } from "./menu-photos";
+import { mediaUrl } from "./media-url";
 
 const log = logger("content");
 
@@ -91,13 +91,12 @@ export async function getMenu(id: VenueId): Promise<MenuSection[]> {
           id: c.slug,
           title: c.title,
           volumes: c.volumes ?? undefined,
-          photo: (c.photo as MenuPhoto) ?? undefined,
           adultsOnly: c.adultsOnly,
           items: list.map((i) => ({
             name: i.name,
             price: i.prices.length === 1 ? i.prices[0] : i.prices,
             note: i.note ?? undefined,
-            photo: (i.photo as MenuPhoto) ?? undefined,
+            photo: mediaUrl(i.photo),
           })),
         });
     }
